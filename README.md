@@ -9,15 +9,15 @@ Automatic system theme synchronization with your wallpaper on **COSMIC Desktop**
 Every time you change your wallpaper or switch between light/dark mode in COSMIC, SystemWallColor:
 1. Generates a matching COSMIC theme with [Matugen](https://github.com/InioX/matugen) and applies it automatically
 2. Generates a terminal color palette with [Pywal](https://github.com/dylanaraps/pywal)
-3. Syncs Firefox's theme with [Pywalfox](https://github.com/Frewacom/pywalfox)
-4. Generates matching light/dark themes for the [Zed](https://zed.dev) editor
-5. Generates a matching CSS snippet for [Obsidian](https://obsidian.md)
+3. Optionally syncs Firefox's theme with [Pywalfox](https://github.com/Frewacom/pywalfox)
+4. Optionally generates matching light/dark themes for the [Zed](https://zed.dev) editor
+5. Optionally generates a matching CSS snippet for [Obsidian](https://obsidian.md)
 
 Everything runs in the background through a **systemd** service that watches for changes in real time.
 
 ## Requirements
 
-- **Pop!_OS with COSMIC Desktop** (or any distribution using COSMIC)
+- **Pop!_OS with COSMIC Desktop**, or **Arch/EndeavourOS/Manjaro/CachyOS**, or **Fedora** running COSMIC Desktop
 - `sudo` access (for installing system dependencies)
 - Firefox (optional, only needed if you want browser theme syncing)
 - Zed (optional, only needed if you want editor theme syncing)
@@ -29,18 +29,27 @@ Everything runs in the background through a **systemd** service that watches for
 git clone https://gitlab.com/Ylamm/systemwallcolor.git
 cd systemwallcolor
 chmod +x install.sh
-./install.sh
+./install.sh [options]
 ```
 
-The `install.sh` script takes care of:
-- Installing system dependencies (`inotify-tools`, `python3-pip`, `pipx`)
-- Installing Rust/Cargo if missing, then compiling `matugen`
-- Installing `pywal` and `pywalfox`
-- Copying the project files to `~/.local/bin/SystemWallColor/`
-- Installing and enabling the user systemd service (`cosmic-watch.service`)
-- Setting up the Matugen templates for COSMIC, Zed, and Obsidian
+`install.sh` auto-detects your distribution (Ubuntu/Pop!_OS/Debian → `apt`, Arch-based → `pacman`, Fedora → `dnf`) and installs the right system packages accordingly.
 
-If you use Firefox, also install the [Pywalfox](https://addons.mozilla.org/en-US/firefox/addon/pywalfox/) extension from the official store.
+**The core (COSMIC theme + Pywal terminal palette) is always installed.** App integrations (Firefox, Zed, Obsidian) are opt-in via flags:
+
+| Flag | Effect |
+|---|---|
+| *(none)* | Core only |
+| `--firefox` | Also enables Firefox theme sync (Pywalfox) |
+| `--zed` | Also enables Zed editor theme sync |
+| `--obsidian` | Also enables Obsidian theme sync |
+| `--all` | Enables everything |
+| `--help` | Shows usage |
+
+Flags can be combined, e.g. `./install.sh --firefox --zed`.
+
+> **Re-running `install.sh` updates the active configuration to match the flags you pass.** If a component was previously enabled and you run the script again without its flag, its Matugen template section is automatically removed from `~/.config/matugen/config.toml` — so it stops being generated.
+
+If you enable Firefox syncing, also install the [Pywalfox](https://addons.mozilla.org/en-US/firefox/addon/pywalfox/) extension from the official store.
 
 > ⚠️ **On first launch**, change your wallpaper once so the service detects the change and applies the initial theme.
 
@@ -56,9 +65,11 @@ If you use Firefox, also install the [Pywalfox](https://addons.mozilla.org/en-US
 
 ### Zed editor theming
 
-SystemWallColor also generates matching **Zed** themes ("Matugen Dark" / "Matugen Light") from your wallpaper colors.
+*(enabled with `--zed` or `--all`)*
 
-On first run, `install.sh` copies the templates (`matugen/templates/zed-colors-dark.json` and `zed-colors-light.json`) and adds the `[templates.zeddark]` / `[templates.zedlight]` sections to your Matugen config. The generated theme is written directly into Zed's Flatpak sandbox config path (`~/.var/app/dev.zed.Zed/config/zed/themes/`), since Zed on Pop!_OS is typically installed via Flatpak.
+SystemWallColor generates matching **Zed** themes ("Matugen Dark" / "Matugen Light") from your wallpaper colors.
+
+The templates (`matugen/templates/zed-colors-dark.json` and `zed-colors-light.json`) are copied and the `[templates.zeddark]` / `[templates.zedlight]` sections are added to your Matugen config. The generated theme is written directly into Zed's Flatpak sandbox config path (`~/.var/app/dev.zed.Zed/config/zed/themes/`), since Zed on Pop!_OS is typically installed via Flatpak.
 
 To activate it in Zed:
 1. Open the command palette (`ctrl-k ctrl-t`)
@@ -67,6 +78,8 @@ To activate it in Zed:
 > ⚠️ If you installed Zed a different way (native binary, apt, snap), edit the `output_path` values for `zeddark`/`zedlight` in `~/.config/matugen/config.toml` to point to `~/.config/zed/themes/` instead.
 
 ### Obsidian theming
+
+*(enabled with `--obsidian` or `--all`)*
 
 SystemWallColor generates a matching CSS snippet for **Obsidian**, with separate light and dark variants, using the `[templates.obsidian]` section in your Matugen config.
 
@@ -108,6 +121,7 @@ chmod +x uninstall.sh
   4. Select the "Pywal" theme from the list
 - **Zed theme syncing requires Zed to be restarted** after the first generation for the new theme to appear in the theme selector. Subsequent wallpaper changes update the theme file in place without needing a restart.
 - **Obsidian's vault path is hardcoded** in `matugen/config.toml` and must be edited manually to match your own vault before the snippet will be generated in the right place.
+- **Arch/Fedora support is untested** — the package names used for `pacman`/`dnf` are best-effort and may need adjusting.
 
 ## License
 
@@ -115,5 +129,5 @@ Personal project, free to use and modify.
 
 ## Source
 
-The Zed matugen templates are inspired by https://github.com/InioX/matugen-themes/blob/main/templates/zed-colors.json
-The Obsidian matugen template comes from https://github.com/Simorg2002/obsidian-matugen-template/tree/main
+- The Zed matugen templates are inspired by https://github.com/InioX/matugen-themes/blob/main/templates/zed-colors.json
+- The Obsidian matugen template comes from https://github.com/Simorg2002/obsidian-matugen-template/tree/main
