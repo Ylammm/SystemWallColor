@@ -3,13 +3,66 @@ set -e
 home="$HOME"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# === Détection de la distribution ===
+detect_distro() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        echo "$ID"
+    else
+        echo "unknown"
+    fi
+}
+
+DISTRO=$(detect_distro)
+
+case "$DISTRO" in
+    ubuntu|pop|debian|linuxmint)
+        PKG_MANAGER="apt"
+        ;;
+    arch|endeavouros|manjaro|cachyos)
+        PKG_MANAGER="pacman"
+        ;;
+    fedora)
+        PKG_MANAGER="dnf"
+        ;;
+    *)
+        echo "⚠️  Distribution non reconnue ($DISTRO)."
+        echo "Ce script supporte : Ubuntu/Pop!_OS/Debian, Arch/EndeavourOS/Manjaro, Fedora."
+        echo "Installez manuellement les paquets suivants puis relancez avec --skip-system-packages :"
+        echo "  inotify-tools, python3-pip, pipx"
+        exit 1
+        ;;
+esac
+
+echo "Distribution détectée : $DISTRO (gestionnaire : $PKG_MANAGER)"
+
+# === Fonction d'installation système, adaptée par distro ===
+install_system_packages() {
+    echo "=== Mise à jour et installation des paquets système ==="
+    case "$PKG_MANAGER" in
+        apt)
+            sudo apt update
+            sudo apt install -y python3-pip inotify-tools pipx
+            ;;
+        pacman)
+            sudo pacman -Syu --noconfirm
+            sudo pacman -S --needed --noconfirm python-pip inotify-tools python-pipx
+            ;;
+        dnf)
+            sudo dnf check-update || true
+            sudo dnf install -y python3-pip inotify-tools pipx
+            ;;
+    esac
+}
+
+# === Le reste du script utilise install_system_packages() à la place d'apt directement ===
+
 # === Valeurs par défaut ===
 DO_FIREFOX=false
 DO_ZED=false
 DO_OBSIDIAN=false
 DO_ALL=false
 
-# === Parsing des arguments ===
 if [ $# -eq 0 ]; then
     DO_ALL=true
 fi
@@ -29,11 +82,11 @@ for arg in "$@"; do
             echo "  --firefox    Installe la synchronisation du thème Firefox (Pywalfox)"
             echo "  --zed        Installe la synchronisation du thème Zed"
             echo "  --obsidian   Installe la synchronisation du thème Obsidian"
-            echo "  --all        Installe tout (équivalent à --firefox --zed --obsidian)"
+            echo "  --all        Installe tout"
             exit 0
             ;;
         *)
-            echo "Option inconnue : $arg (utilisez --help pour la liste des options)"
+            echo "Option inconnue : $arg (utilisez --help)"
             exit 1
             ;;
     esac
@@ -52,14 +105,8 @@ echo "Zed                   : $DO_ZED"
 echo "Obsidian              : $DO_OBSIDIAN"
 echo ""
 
-# === Fonctions par composant ===
-
 install_core_system() {
-    echo "=== Mise à jour ==="
-    sudo apt update
-
-    echo "=== Installation des paquets système ==="
-    sudo apt install -y python3-pip inotify-tools pipx
+    install_system_packages
 
     echo "=== Installation de Rust et Cargo ==="
     if ! command -v cargo &> /dev/null; then
@@ -73,7 +120,11 @@ install_core_system() {
     cargo install matugen
 
     echo "=== Installation de pywal ==="
-    pip3 install --break-system-packages pywal
+    if [ "$PKG_MANAGER" = "pacman" ]; then
+        pip3 install --break-system-packages pywal 2>/dev/null || pip3 install --user pywal
+    else
+        pip3 install --break-system-packages pywal
+    fi
 }
 
 install_firefox() {
