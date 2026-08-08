@@ -1,0 +1,12 @@
+[Unit]
+Description=Surveille les changements de fond d'écran/thème COSMIC
+After=graphical-session.target
+
+[Service]
+Environment="PATH=%h/.cargo/bin:%h/.local/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=%h/.local/bin/SystemWallColor/swcw.sh
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=default.target
