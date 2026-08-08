@@ -139,6 +139,7 @@ install_project_files() {
     cp "$script_dir/swcw.sh" "$home/.local/bin/SystemWallColor/swcw.sh"
     chmod +x "$home/.local/bin/SystemWallColor/swc.py"
     chmod +x "$home/.local/bin/SystemWallColor/swcw.sh"
+    chmod +x "$home/.local/bin/SystemWallColor/uninstall.sh"
 }
 
 add_template_block() {
