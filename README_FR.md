@@ -98,3 +98,8 @@ rm -r ~/.local/bin/SystemWallColor
 ## Licence
 
 Projet personnel, libre d'utilisation et de modification.
+
+## Source
+
+Les templates matugen pour Zed sont inspirés de https://github.com/InioX/matugen-themes/blob/main/templates/zed-colors.json
+Le template matugen pour Obsidian provient de https://github.com/Simorg2002/obsidian-matugen-template/tree/main
