@@ -96,7 +96,8 @@ cp "$script_dir/cosmic-watch.service" "$home/.config/systemd/user/cosmic-watch.s
 
 echo "=== Activation du service ==="
 systemctl --user daemon-reload
-systemctl --user enable --now cosmic-watch.service
+systemctl --user enable cosmic-watch.service
+systemctl --user restart cosmic-watch.service
 
 
 echo "=== Installation terminée ==="
