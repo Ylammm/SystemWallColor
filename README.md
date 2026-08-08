@@ -71,7 +71,7 @@ rm -r ~/.local/bin/SystemWallColor
   1. Ouvrez cosmic-term
   2. **View → Color schemes... → Import**
 
-     ![Import d'un thème dans cosmic-term](Terminal_Couleur_Aide.png)
+     <img src="Terminal_Couleur_Aide.png" alt="Import d'un thème dans cosmic-term" width="500">
   3. Sélectionnez `~/.cache/wal/cosmic_term.ron`
   4. Sélectionnez le thème "Pywal" dans la liste
 
