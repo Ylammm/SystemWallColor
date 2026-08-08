@@ -3,62 +3,95 @@ set -e
 home="$HOME"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# === Valeurs par défaut ===
+DO_FIREFOX=false
+DO_ZED=false
+DO_OBSIDIAN=false
+DO_ALL=false
 
-echo "=== Mise à jour ==="
-sudo apt update
-
-
-echo "=== Installation des paquets système ==="
-sudo apt install -y python3-pip inotify-tools pipx
-
-
-echo "=== Installation de Rust et Cargo ==="
-if ! command -v cargo &> /dev/null; then
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    source "$HOME/.cargo/env"
-else
-    echo "Cargo déjà installé."
+# === Parsing des arguments ===
+if [ $# -eq 0 ]; then
+    DO_ALL=true
 fi
 
+for arg in "$@"; do
+    case $arg in
+        --firefox)   DO_FIREFOX=true ;;
+        --zed)       DO_ZED=true ;;
+        --obsidian)  DO_OBSIDIAN=true ;;
+        --all)       DO_ALL=true ;;
+        -h|--help)
+            echo "Usage: ./install.sh [options]"
+            echo ""
+            echo "Sans option : installe uniquement le cœur (COSMIC + Pywal)."
+            echo ""
+            echo "Options:"
+            echo "  --firefox    Installe la synchronisation du thème Firefox (Pywalfox)"
+            echo "  --zed        Installe la synchronisation du thème Zed"
+            echo "  --obsidian   Installe la synchronisation du thème Obsidian"
+            echo "  --all        Installe tout (équivalent à --firefox --zed --obsidian)"
+            exit 0
+            ;;
+        *)
+            echo "Option inconnue : $arg (utilisez --help pour la liste des options)"
+            exit 1
+            ;;
+    esac
+done
 
-echo "=== Installation de matugen ==="
-cargo install matugen
-
-
-echo "=== Installation de pywal ==="
-pip3 install --break-system-packages pywal
-
-
-echo "=== Installation de pywalfox ==="
-pipx ensurepath
-export PATH="$HOME/.local/bin:$PATH"
-pipx install pywalfox
-pywalfox install
-
-
-echo "=== Installation des fichiers du projet ==="
-mkdir -p "$home/.local/bin/SystemWallColor"
-cp "$script_dir/swc.py" "$home/.local/bin/SystemWallColor/swc.py"
-cp "$script_dir/swcw.sh" "$home/.local/bin/SystemWallColor/swcw.sh"
-chmod +x "$home/.local/bin/SystemWallColor/swc.py"
-chmod +x "$home/.local/bin/SystemWallColor/swcw.sh"
-
-
-echo "=== Mise en place de matugen ==="
-mkdir -p "$home/.config/matugen/templates"
-
-# Copier les templates du thème desktop et de ceux des applications, sans écraser l'existant
-cp -n "$script_dir/matugen/templates/cosmic_theme_dark.txt" "$home/.config/matugen/templates/cosmic_theme_dark.txt" 2>/dev/null || true
-cp -n "$script_dir/matugen/templates/cosmic_theme_light.txt" "$home/.config/matugen/templates/cosmic_theme_light.txt" 2>/dev/null || true
-cp -n "$script_dir/matugen/templates/zed-colors-dark.json" "$home/.config/matugen/templates/zed-colors-dark.json" 2>/dev/null || true
-cp -n "$script_dir/matugen/templates/zed-colors-light.json" "$home/.config/matugen/templates/zed-colors-light.json" 2>/dev/null || true
-cp -n "$script_dir/matugen/templates/obsidian-minimal-matugen-colors.css" "$home/.config/matugen/templates/obsidian-minimal-matugen-colors.css" 2>/dev/null || true
-
-CONFIG_FILE="$home/.config/matugen/config.toml"
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "[config]" > "$CONFIG_FILE"
-    echo "Fichier config.toml créé."
+if [ "$DO_ALL" = true ]; then
+    DO_FIREFOX=true
+    DO_ZED=true
+    DO_OBSIDIAN=true
 fi
+
+echo "=== Composants sélectionnés ==="
+echo "Cœur (COSMIC + Pywal) : toujours installé"
+echo "Firefox (Pywalfox)    : $DO_FIREFOX"
+echo "Zed                   : $DO_ZED"
+echo "Obsidian              : $DO_OBSIDIAN"
+echo ""
+
+# === Fonctions par composant ===
+
+install_core_system() {
+    echo "=== Mise à jour ==="
+    sudo apt update
+
+    echo "=== Installation des paquets système ==="
+    sudo apt install -y python3-pip inotify-tools pipx
+
+    echo "=== Installation de Rust et Cargo ==="
+    if ! command -v cargo &> /dev/null; then
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        source "$HOME/.cargo/env"
+    else
+        echo "Cargo déjà installé."
+    fi
+
+    echo "=== Installation de matugen ==="
+    cargo install matugen
+
+    echo "=== Installation de pywal ==="
+    pip3 install --break-system-packages pywal
+}
+
+install_firefox() {
+    echo "=== Installation de pywalfox ==="
+    pipx ensurepath
+    export PATH="$HOME/.local/bin:$PATH"
+    pipx install pywalfox
+    pywalfox install
+}
+
+install_project_files() {
+    echo "=== Installation des fichiers du projet ==="
+    mkdir -p "$home/.local/bin/SystemWallColor"
+    cp "$script_dir/swc.py" "$home/.local/bin/SystemWallColor/swc.py"
+    cp "$script_dir/swcw.sh" "$home/.local/bin/SystemWallColor/swcw.sh"
+    chmod +x "$home/.local/bin/SystemWallColor/swc.py"
+    chmod +x "$home/.local/bin/SystemWallColor/swcw.sh"
+}
 
 add_template_block() {
     local name="$1"
@@ -78,42 +111,81 @@ add_template_block() {
     fi
 }
 
-add_template_block "cosmicdark" \
-    '~/.config/matugen/templates/cosmic_theme_dark.txt' \
-    '~/.config/matugen/cosmic_theme_dark.ron'
+setup_matugen_core() {
+    echo "=== Mise en place de matugen (thème COSMIC) ==="
+    mkdir -p "$home/.config/matugen/templates"
 
-add_template_block "cosmiclight" \
-    '~/.config/matugen/templates/cosmic_theme_light.txt' \
-    '~/.config/matugen/cosmic_theme_light.ron'
+    cp -n "$script_dir/matugen/templates/cosmic_theme_dark.txt" "$home/.config/matugen/templates/cosmic_theme_dark.txt" 2>/dev/null || true
+    cp -n "$script_dir/matugen/templates/cosmic_theme_light.txt" "$home/.config/matugen/templates/cosmic_theme_light.txt" 2>/dev/null || true
 
-add_template_block "zeddark" \
-    '~/.config/matugen/templates/zed-colors-dark.json' \
-    '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_dark.json'
+    CONFIG_FILE="$home/.config/matugen/config.toml"
+    if [ ! -f "$CONFIG_FILE" ]; then
+        echo "[config]" > "$CONFIG_FILE"
+        echo "Fichier config.toml créé."
+    fi
 
-add_template_block "zedlight" \
-    '~/.config/matugen/templates/zed-colors-light.json' \
-    '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_light.json'
+    add_template_block "cosmicdark" \
+        '~/.config/matugen/templates/cosmic_theme_dark.txt' \
+        '~/.config/matugen/cosmic_theme_dark.ron'
 
-add_template_block "obsidian" \
-    '~/.config/matugen/templates/obsidian-minimal-matugen-colors.css' \
-    '~/Documents/Obsidian Vault/.obsidian/snippets/Matugen.css'
+    add_template_block "cosmiclight" \
+        '~/.config/matugen/templates/cosmic_theme_light.txt' \
+        '~/.config/matugen/cosmic_theme_light.ron'
+}
 
+setup_matugen_zed() {
+    echo "=== Mise en place de matugen (thème Zed) ==="
+    cp -n "$script_dir/matugen/templates/zed-colors-dark.json" "$home/.config/matugen/templates/zed-colors-dark.json" 2>/dev/null || true
+    cp -n "$script_dir/matugen/templates/zed-colors-light.json" "$home/.config/matugen/templates/zed-colors-light.json" 2>/dev/null || true
 
-echo "=== Mise en place du template Pywal pour cosmic-term ==="
-mkdir -p "$home/.config/wal/templates"
-cp -n "$script_dir/cosmic_term.ron" "$home/.config/wal/templates/cosmic_term.ron"
+    add_template_block "zeddark" \
+        '~/.config/matugen/templates/zed-colors-dark.json' \
+        '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_dark.json'
 
+    add_template_block "zedlight" \
+        '~/.config/matugen/templates/zed-colors-light.json' \
+        '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_light.json'
+}
 
-echo "=== Installation du service systemd ==="
-mkdir -p "$home/.config/systemd/user"
-cp "$script_dir/cosmic-watch.service" "$home/.config/systemd/user/cosmic-watch.service"
+setup_matugen_obsidian() {
+    echo "=== Mise en place de matugen (thème Obsidian) ==="
+    cp -n "$script_dir/matugen/templates/obsidian-minimal-matugen-colors.css" "$home/.config/matugen/templates/obsidian-minimal-matugen-colors.css" 2>/dev/null || true
 
+    add_template_block "obsidian" \
+        '~/.config/matugen/templates/obsidian-minimal-matugen-colors.css' \
+        '~/Documents/Obsidian Vault/.obsidian/snippets/Matugen.css'
+}
 
-echo "=== Activation du service ==="
-systemctl --user daemon-reload
-systemctl --user enable cosmic-watch.service
-systemctl --user restart cosmic-watch.service
+setup_pywal_cosmic_term() {
+    echo "=== Mise en place du template Pywal pour cosmic-term ==="
+    mkdir -p "$home/.config/wal/templates"
+    cp -n "$script_dir/cosmic_term.ron" "$home/.config/wal/templates/cosmic_term.ron"
+}
 
+setup_systemd_service() {
+    echo "=== Installation du service systemd ==="
+    mkdir -p "$home/.config/systemd/user"
+    cp "$script_dir/cosmic-watch.service" "$home/.config/systemd/user/cosmic-watch.service"
+
+    echo "=== Activation du service ==="
+    systemctl --user daemon-reload
+    systemctl --user enable cosmic-watch.service
+    systemctl --user restart cosmic-watch.service
+}
+
+# === Exécution ===
+
+install_core_system
+[ "$DO_FIREFOX" = true ] && install_firefox
+
+install_project_files
+
+setup_matugen_core
+[ "$DO_ZED" = true ] && setup_matugen_zed
+[ "$DO_OBSIDIAN" = true ] && setup_matugen_obsidian
+
+setup_pywal_cosmic_term
+setup_systemd_service
 
 echo "=== Installation terminée ==="
 echo -e "N'oubliez pas d'ajouter '$HOME/.cargo/bin' à votre PATH si ce n'est pas déjà fait.\n\033[1mVous pouvez aussi supprimer SystemWallColor.\033[0m"
