@@ -28,15 +28,12 @@ case "$DISTRO" in
     *)
         echo "⚠️  Distribution non reconnue ($DISTRO)."
         echo "Ce script supporte : Ubuntu/Pop!_OS/Debian, Arch/EndeavourOS/Manjaro, Fedora."
-        echo "Installez manuellement les paquets suivants puis relancez avec --skip-system-packages :"
-        echo "  inotify-tools, python3-pip, pipx"
         exit 1
         ;;
 esac
 
 echo "Distribution détectée : $DISTRO (gestionnaire : $PKG_MANAGER)"
 
-# === Fonction d'installation système, adaptée par distro ===
 install_system_packages() {
     echo "=== Mise à jour et installation des paquets système ==="
     case "$PKG_MANAGER" in
@@ -54,8 +51,6 @@ install_system_packages() {
             ;;
     esac
 }
-
-# === Le reste du script utilise install_system_packages() à la place d'apt directement ===
 
 # === Valeurs par défaut ===
 DO_FIREFOX=false
@@ -76,13 +71,15 @@ for arg in "$@"; do
         -h|--help)
             echo "Usage: ./install.sh [options]"
             echo ""
-            echo "Sans option : installe uniquement le cœur (COSMIC + Pywal)."
+            echo "Sans option : installe/active uniquement le cœur (COSMIC + Pywal)."
+            echo "Les composants non listés dans les flags sont désactivés (leurs"
+            echo "sections Matugen sont retirées de la config s'ils étaient actifs)."
             echo ""
             echo "Options:"
-            echo "  --firefox    Installe la synchronisation du thème Firefox (Pywalfox)"
-            echo "  --zed        Installe la synchronisation du thème Zed"
-            echo "  --obsidian   Installe la synchronisation du thème Obsidian"
-            echo "  --all        Installe tout"
+            echo "  --firefox    Active la synchronisation du thème Firefox (Pywalfox)"
+            echo "  --zed        Active la synchronisation du thème Zed"
+            echo "  --obsidian   Active la synchronisation du thème Obsidian"
+            echo "  --all        Active tout"
             exit 0
             ;;
         *)
@@ -99,7 +96,7 @@ if [ "$DO_ALL" = true ]; then
 fi
 
 echo "=== Composants sélectionnés ==="
-echo "Cœur (COSMIC + Pywal) : toujours installé"
+echo "Cœur (COSMIC + Pywal) : toujours actif"
 echo "Firefox (Pywalfox)    : $DO_FIREFOX"
 echo "Zed                   : $DO_ZED"
 echo "Obsidian              : $DO_OBSIDIAN"
@@ -162,6 +159,23 @@ add_template_block() {
     fi
 }
 
+# Retire une section [templates.NAME] (header + les 2 lignes input_path/output_path
+# qui suivent) si elle existe. Structure fixe présumée : 3 lignes par bloc.
+remove_template_block() {
+    local name="$1"
+
+    if [ ! -f "$CONFIG_FILE" ]; then
+        return
+    fi
+
+    if grep -q "^\[templates\.$name\]$" "$CONFIG_FILE"; then
+        sed -i "/^\[templates\.$name\]$/,+2d" "$CONFIG_FILE"
+        # Nettoie une éventuelle ligne vide devenue orpheline juste avant
+        sed -i '/./,/^$/!d' "$CONFIG_FILE" 2>/dev/null || true
+        echo "Section [templates.$name] retirée (composant désactivé)."
+    fi
+}
+
 setup_matugen_core() {
     echo "=== Mise en place de matugen (thème COSMIC) ==="
     mkdir -p "$home/.config/matugen/templates"
@@ -198,6 +212,11 @@ setup_matugen_zed() {
         '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_light.json'
 }
 
+disable_matugen_zed() {
+    remove_template_block "zeddark"
+    remove_template_block "zedlight"
+}
+
 setup_matugen_obsidian() {
     echo "=== Mise en place de matugen (thème Obsidian) ==="
     cp -n "$script_dir/matugen/templates/obsidian-minimal-matugen-colors.css" "$home/.config/matugen/templates/obsidian-minimal-matugen-colors.css" 2>/dev/null || true
@@ -205,6 +224,10 @@ setup_matugen_obsidian() {
     add_template_block "obsidian" \
         '~/.config/matugen/templates/obsidian-minimal-matugen-colors.css' \
         '~/Documents/Obsidian Vault/.obsidian/snippets/Matugen.css'
+}
+
+disable_matugen_obsidian() {
+    remove_template_block "obsidian"
 }
 
 setup_pywal_cosmic_term() {
@@ -232,8 +255,18 @@ install_core_system
 install_project_files
 
 setup_matugen_core
-[ "$DO_ZED" = true ] && setup_matugen_zed
-[ "$DO_OBSIDIAN" = true ] && setup_matugen_obsidian
+
+if [ "$DO_ZED" = true ]; then
+    setup_matugen_zed
+else
+    disable_matugen_zed
+fi
+
+if [ "$DO_OBSIDIAN" = true ]; then
+    setup_matugen_obsidian
+else
+    disable_matugen_obsidian
+fi
 
 setup_pywal_cosmic_term
 setup_systemd_service

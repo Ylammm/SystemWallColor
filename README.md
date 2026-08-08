@@ -91,9 +91,8 @@ journalctl --user -u cosmic-watch.service -f
 ## Uninstall
 
 ```bash
-systemctl --user disable --now cosmic-watch.service
-rm ~/.config/systemd/user/cosmic-watch.service
-rm -r ~/.local/bin/SystemWallColor
+chmod +x uninstall.sh
+./uninstall.sh
 ```
 
 ## Known limitations
