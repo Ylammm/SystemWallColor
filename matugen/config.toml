@@ -15,3 +15,7 @@ output_path = '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_dark.json'
 [templates.zedlight]
 input_path = '~/.config/matugen/templates/zed-colors-light.json'
 output_path = '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_light.json'
+
+[templates.obsidian]
+input_path = '~/.config/matugen/templates/obsidian-minimal-matugen-colors.css'
+output_path = '~/Documents/Obsidian Vault/.obsidian/snippets/Matugen.css'

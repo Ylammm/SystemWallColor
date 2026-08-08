@@ -52,6 +52,7 @@ cp -n "$script_dir/matugen/templates/cosmic_theme_dark.txt" "$home/.config/matug
 cp -n "$script_dir/matugen/templates/cosmic_theme_light.txt" "$home/.config/matugen/templates/cosmic_theme_light.txt" 2>/dev/null || true
 cp -n "$script_dir/matugen/templates/zed-colors-dark.json" "$home/.config/matugen/templates/zed-colors-dark.json" 2>/dev/null || true
 cp -n "$script_dir/matugen/templates/zed-colors-light.json" "$home/.config/matugen/templates/zed-colors-light.json" 2>/dev/null || true
+cp -n "$script_dir/matugen/templates/obsidian-minimal-matugen-colors.css" "$home/.config/matugen/templates/obsidian-minimal-matugen-colors.css" 2>/dev/null || true
 
 CONFIG_FILE="$home/.config/matugen/config.toml"
 if [ ! -f "$CONFIG_FILE" ]; then
@@ -92,6 +93,10 @@ add_template_block "zeddark" \
 add_template_block "zedlight" \
     '~/.config/matugen/templates/zed-colors-light.json' \
     '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_light.json'
+
+add_template_block "obsidian" \
+    '~/.config/matugen/templates/obsidian-minimal-matugen-colors.css' \
+    '~/Documents/Obsidian Vault/.obsidian/snippets/Matugen.css'
 
 
 echo "=== Mise en place du template Pywal pour cosmic-term ==="

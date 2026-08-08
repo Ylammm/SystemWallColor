@@ -11,6 +11,7 @@ Every time you change your wallpaper or switch between light/dark mode in COSMIC
 2. Generates a terminal color palette with [Pywal](https://github.com/dylanaraps/pywal)
 3. Syncs Firefox's theme with [Pywalfox](https://github.com/Frewacom/pywalfox)
 4. Generates matching light/dark themes for the [Zed](https://zed.dev) editor
+5. Generates a matching CSS snippet for [Obsidian](https://obsidian.md)
 
 Everything runs in the background through a **systemd** service that watches for changes in real time.
 
@@ -20,6 +21,7 @@ Everything runs in the background through a **systemd** service that watches for
 - `sudo` access (for installing system dependencies)
 - Firefox (optional, only needed if you want browser theme syncing)
 - Zed (optional, only needed if you want editor theme syncing)
+- Obsidian (optional, only needed if you want notes app theme syncing)
 
 ## Installation
 
@@ -36,7 +38,7 @@ The `install.sh` script takes care of:
 - Installing `pywal` and `pywalfox`
 - Copying the project files to `~/.local/bin/SystemWallColor/`
 - Installing and enabling the user systemd service (`cosmic-watch.service`)
-- Setting up the Matugen templates for COSMIC and Zed
+- Setting up the Matugen templates for COSMIC, Zed, and Obsidian
 
 If you use Firefox, also install the [Pywalfox](https://addons.mozilla.org/en-US/firefox/addon/pywalfox/) extension from the official store.
 
@@ -50,7 +52,9 @@ If you use Firefox, also install the [Pywalfox](https://addons.mozilla.org/en-US
 | `swc.py` | Runs on every detected change; orchestrates Matugen, Pywal, Pywalfox, and applies the theme |
 | `cosmic-watch.service` | User systemd service that keeps `swcw.sh` running permanently |
 
-## Zed editor theming
+## App theming
+
+### Zed editor theming
 
 SystemWallColor also generates matching **Zed** themes ("Matugen Dark" / "Matugen Light") from your wallpaper colors.
 
@@ -61,6 +65,16 @@ To activate it in Zed:
 2. Select **Matugen Dark** or **Matugen Light**
 
 > ⚠️ If you installed Zed a different way (native binary, apt, snap), edit the `output_path` values for `zeddark`/`zedlight` in `~/.config/matugen/config.toml` to point to `~/.config/zed/themes/` instead.
+
+### Obsidian theming
+
+SystemWallColor generates a matching CSS snippet for **Obsidian**, with separate light and dark variants, using the `[templates.obsidian]` section in your Matugen config.
+
+> ⚠️ **The output path is hardcoded to a specific vault** (`~/Documents/Obsidian Vault/.obsidian/snippets/Matugen.css` by default). Edit the `output_path` in `~/.config/matugen/config.toml` to match your own vault's location before it will work.
+
+To activate it in Obsidian:
+1. Open **Settings → Appearance → CSS snippets**
+2. Enable the **Matugen** snippet
 
 ## Check that the service is running
 
@@ -94,6 +108,7 @@ rm -r ~/.local/bin/SystemWallColor
   3. Select `~/.cache/wal/cosmic_term.ron`
   4. Select the "Pywal" theme from the list
 - **Zed theme syncing requires Zed to be restarted** after the first generation for the new theme to appear in the theme selector. Subsequent wallpaper changes update the theme file in place without needing a restart.
+- **Obsidian's vault path is hardcoded** in `matugen/config.toml` and must be edited manually to match your own vault before the snippet will be generated in the right place.
 
 ## License
 
