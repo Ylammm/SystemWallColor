@@ -6,7 +6,7 @@ After=graphical-session.target
 Environment="PATH=%h/.cargo/bin:%h/.local/bin:/usr/local/bin:/usr/bin:/bin"
 ExecStart=%h/.local/bin/SystemWallColor/swcw.sh
 Restart=always
-RestartSec=1
+RestartSec=0.5
 
 [Install]
 WantedBy=default.target
