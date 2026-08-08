@@ -28,7 +28,7 @@ try:
 except subprocess.CalledProcessError as e:
     print(f"Erreur Pywal : {e}")
 
- try:
+try:
     subprocess.run(["pywalfox", modec], check=True)
     subprocess.run(["pywalfox", "update"], check=True)
     print("Pywalfox OK")
