@@ -1,0 +1,9 @@
+[config]
+
+[templates.cosmicdark]
+input_path = '~/.config/matugen/templates/cosmic_theme_dark.txt'
+output_path = '~/.config/matugen/cosmic_theme_dark.ron'
+
+[templates.cosmiclight]
+input_path = '~/.config/matugen/templates/cosmic_theme_light.txt'
+output_path = '~/.config/matugen/cosmic_theme_light.ron'
