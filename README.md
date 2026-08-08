@@ -1,19 +1,21 @@
 # SystemWallColor
 
-Synchronisation automatique des thèmes système avec le fond d'écran sur **COSMIC Desktop** (Pop!_OS).
+*[Version française](README_fr.md)*
 
-Dès que vous changez de wallpaper ou de mode clair/sombre dans COSMIC, SystemWallColor :
-1. Génère un thème COSMIC assorti avec [Matugen](https://github.com/InioX/matugen) et l'applique automatiquement
-2. Génère une palette de couleurs terminal avec [Pywal](https://github.com/dylanaraps/pywal)
-3. Synchronise le thème de Firefox avec [Pywalfox](https://github.com/Frewacom/pywalfox)
+Automatic system theme synchronization with your wallpaper on **COSMIC Desktop** (Pop!_OS).
 
-Le tout tourne en arrière-plan via un service **systemd** qui surveille les changements en temps réel.
+Every time you change your wallpaper or switch between light/dark mode in COSMIC, SystemWallColor:
+1. Generates a matching COSMIC theme with [Matugen](https://github.com/InioX/matugen) and applies it automatically
+2. Generates a terminal color palette with [Pywal](https://github.com/dylanaraps/pywal)
+3. Syncs Firefox's theme with [Pywalfox](https://github.com/Frewacom/pywalfox)
 
-## Prérequis
+Everything runs in the background through a **systemd** service that watches for changes in real time.
 
-- **Pop!_OS avec COSMIC Desktop** (ou toute distribution utilisant COSMIC)
-- Accès `sudo` (pour l'installation des dépendances système)
-- Firefox (optionnel, uniquement si vous voulez la synchronisation du thème navigateur)
+## Requirements
+
+- **Pop!_OS with COSMIC Desktop** (or any distribution using COSMIC)
+- `sudo` access (for installing system dependencies)
+- Firefox (optional, only needed if you want browser theme syncing)
 
 ## Installation
 
@@ -24,38 +26,38 @@ chmod +x install.sh
 ./install.sh
 ```
 
-Le script `install.sh` s'occupe de :
-- Installer les dépendances système (`inotify-tools`, `python3-pip`, `pipx`)
-- Installer Rust/Cargo si absent, puis compiler `matugen`
-- Installer `pywal` et `pywalfox`
-- Copier les fichiers du projet dans `~/.local/bin/SystemWallColor/`
-- Installer et activer le service systemd utilisateur (`cosmic-watch.service`)
+The `install.sh` script takes care of:
+- Installing system dependencies (`inotify-tools`, `python3-pip`, `pipx`)
+- Installing Rust/Cargo if missing, then compiling `matugen`
+- Installing `pywal` and `pywalfox`
+- Copying the project files to `~/.local/bin/SystemWallColor/`
+- Installing and enabling the user systemd service (`cosmic-watch.service`)
 
-Si vous utilisez Firefox, installez également l'extension [Pywalfox](https://addons.mozilla.org/en-US/firefox/addon/pywalfox/) depuis le store officiel.
+If you use Firefox, also install the [Pywalfox](https://addons.mozilla.org/en-US/firefox/addon/pywalfox/) extension from the official store.
 
-> ⚠️ **Au premier lancement**, changez une première fois de fond d'écran pour que le service détecte le changement et applique le thème initial.
+> ⚠️ **On first launch**, change your wallpaper once so the service detects the change and applies the initial theme.
 
-## Fonctionnement
+## How it works
 
-| Composant | Rôle |
+| Component | Role |
 |---|---|
-| `swcw.sh` | Surveille les fichiers de configuration COSMIC via `inotifywait` |
-| `swc.py` | Exécuté à chaque changement détecté ; orchestre Matugen, Pywal, Pywalfox et l'application du thème |
-| `cosmic-watch.service` | Service systemd utilisateur qui garde `swcw.sh` actif en permanence |
+| `swcw.sh` | Watches COSMIC config files via `inotifywait` |
+| `swc.py` | Runs on every detected change; orchestrates Matugen, Pywal, Pywalfox, and applies the theme |
+| `cosmic-watch.service` | User systemd service that keeps `swcw.sh` running permanently |
 
-## Vérifier que le service tourne
+## Check that the service is running
 
 ```bash
 systemctl --user status cosmic-watch.service
 ```
 
-## Suivre les logs en direct
+## Follow the logs live
 
 ```bash
 journalctl --user -u cosmic-watch.service -f
 ```
 
-## Désinstallation
+## Uninstall
 
 ```bash
 systemctl --user disable --now cosmic-watch.service
@@ -63,18 +65,18 @@ rm ~/.config/systemd/user/cosmic-watch.service
 rm -r ~/.local/bin/SystemWallColor
 ```
 
-## Limitations connues
+## Known limitations
 
-- Fonctionne uniquement avec **COSMIC Desktop** (dépend de `cosmic-settings` et des fichiers de config spécifiques à COSMIC).
-- La synchronisation Firefox nécessite que le navigateur soit ouvert et l'extension Pywalfox installée côté navigateur.
-- **Les couleurs internes de cosmic-term (fond, texte) ne peuvent pas être automatisées actuellement.** cosmic-term ne recharge pas son thème même si le fichier de configuration est modifié en arrière-plan. Pour appliquer manuellement les nouvelles couleurs :
-  1. Ouvrez cosmic-term
+- Only works with **COSMIC Desktop** (depends on `cosmic-settings` and COSMIC-specific config files).
+- Firefox syncing requires the browser to be open and the Pywalfox extension installed on the browser side.
+- **cosmic-term's internal colors (background, text) currently can't be automated.** cosmic-term doesn't reload its theme even if the config file is changed in the background. To apply the new colors manually:
+  1. Open cosmic-term
   2. **View → Color schemes... → Import**
 
-     <img src="Terminal_Couleur_Aide.png" alt="Import d'un thème dans cosmic-term" width="30%">
-  3. Sélectionnez `~/.cache/wal/cosmic_term.ron`
-  4. Sélectionnez le thème "Pywal" dans la liste
+     <img src="Terminal_Couleur_Aide.png" alt="Importing a theme in cosmic-term" width="30%">
+  3. Select `~/.cache/wal/cosmic_term.ron`
+  4. Select the "Pywal" theme from the list
 
-## Licence
+## License
 
-Projet personnel, libre d'utilisation et de modification.
+Personal project, free to use and modify.
