@@ -2,6 +2,8 @@
 
 *[Version française](README_fr.md)*
 
+![Showcase](showcase.gif)
+
 Automatic system theme synchronization with your wallpaper on **COSMIC Desktop** (Pop!_OS).
 
 Every time you change your wallpaper or switch between light/dark mode in COSMIC, SystemWallColor:

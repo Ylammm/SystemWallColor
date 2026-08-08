@@ -2,6 +2,8 @@
 
 *[English version](README.md)*
 
+![Showcase](showcase.gif)
+
 Synchronisation automatique des thèmes système avec le fond d'écran sur **COSMIC Desktop** (Pop!_OS).
 
 Dès que vous changez de wallpaper ou de mode clair/sombre dans COSMIC, SystemWallColor :
