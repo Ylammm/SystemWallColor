@@ -67,7 +67,7 @@ rm -r ~/.local/bin/SystemWallColor
 - La synchronisation Firefox nécessite que le navigateur soit ouvert et l'extension Pywalfox installée côté navigateur.
 - **Les couleurs internes de cosmic-term (fond, texte) ne peuvent pas être automatisées actuellement.** cosmic-term ne recharge pas son thème même si le fichier de configuration est modifié en arrière-plan. Pour appliquer manuellement les nouvelles couleurs :
   1. Ouvrez cosmic-term
-  2. **View → Color schemes... → Import**
+  2. **View → Color schemes... → Import** ![Import d'un thème dans cosmic-term](Terminal_Couleur_Aide.png)
   3. Sélectionnez `~/.cache/wal/cosmic_term.ron`
   4. Sélectionnez le thème "Pywal" dans la liste
 
