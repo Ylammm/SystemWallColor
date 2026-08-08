@@ -47,9 +47,11 @@ chmod +x "$home/.local/bin/SystemWallColor/swcw.sh"
 echo "=== Mise en place de matugen ==="
 mkdir -p "$home/.config/matugen/templates"
 
-# Copier les templates du thème desktop, sans écraser l'existant
+# Copier les templates du thème desktop et de ceux des applications, sans écraser l'existant
 cp -n "$script_dir/matugen/templates/cosmic_theme_dark.txt" "$home/.config/matugen/templates/cosmic_theme_dark.txt" 2>/dev/null || true
 cp -n "$script_dir/matugen/templates/cosmic_theme_light.txt" "$home/.config/matugen/templates/cosmic_theme_light.txt" 2>/dev/null || true
+cp -n "$script_dir/matugen/templates/zed-colors-dark.json" "$home/.config/matugen/templates/zed-colors-dark.json" 2>/dev/null || true
+cp -n "$script_dir/matugen/templates/zed-colors-light.json" "$home/.config/matugen/templates/zed-colors-light.json" 2>/dev/null || true
 
 CONFIG_FILE="$home/.config/matugen/config.toml"
 if [ ! -f "$CONFIG_FILE" ]; then
@@ -82,7 +84,15 @@ add_template_block "cosmicdark" \
 add_template_block "cosmiclight" \
     '~/.config/matugen/templates/cosmic_theme_light.txt' \
     '~/.config/matugen/cosmic_theme_light.ron'
-    
+
+add_template_block "zeddark" \
+    '~/.config/matugen/templates/zed-colors-dark.json' \
+    '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_dark.json'
+
+add_template_block "zedlight" \
+    '~/.config/matugen/templates/zed-colors-light.json' \
+    '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_light.json'
+
 
 echo "=== Mise en place du template Pywal pour cosmic-term ==="
 mkdir -p "$home/.config/wal/templates"

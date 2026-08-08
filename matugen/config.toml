@@ -7,3 +7,11 @@ output_path = '~/.config/matugen/cosmic_theme_dark.ron'
 [templates.cosmiclight]
 input_path = '~/.config/matugen/templates/cosmic_theme_light.txt'
 output_path = '~/.config/matugen/cosmic_theme_light.ron'
+
+[templates.zeddark]
+input_path = '~/.config/matugen/templates/zed-colors-dark.json'
+output_path = '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_dark.json'
+
+[templates.zedlight]
+input_path = '~/.config/matugen/templates/zed-colors-light.json'
+output_path = '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_light.json'
