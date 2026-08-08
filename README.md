@@ -3,10 +3,9 @@
 Synchronisation automatique des thèmes système avec le fond d'écran sur **COSMIC Desktop** (Pop!_OS).
 
 Dès que vous changez de wallpaper ou de mode clair/sombre dans COSMIC, SystemWallColor :
-1. Génère un thème COSMIC assorti avec [Matugen](https://github.com/InioX/matugen)
-2. Génère une palette de couleurs terminal avec [Matugen](https://github.com/InioX/matugen)
+1. Génère un thème COSMIC assorti avec [Matugen](https://github.com/InioX/matugen) et l'applique automatiquement
+2. Génère une palette de couleurs terminal avec [Pywal](https://github.com/dylanaraps/pywal)
 3. Synchronise le thème de Firefox avec [Pywalfox](https://github.com/Frewacom/pywalfox)
-4. Applique automatiquement le nouveau thème COSMIC
 
 Le tout tourne en arrière-plan via un service **systemd** qui surveille les changements en temps réel.
 
@@ -66,6 +65,11 @@ rm -r ~/.local/bin/SystemWallColor
 
 - Fonctionne uniquement avec **COSMIC Desktop** (dépend de `cosmic-settings` et des fichiers de config spécifiques à COSMIC).
 - La synchronisation Firefox nécessite que le navigateur soit ouvert et l'extension Pywalfox installée côté navigateur.
+- **Les couleurs internes de cosmic-term (fond, texte) ne peuvent pas être automatisées actuellement.** cosmic-term ne recharge pas son thème même si le fichier de configuration est modifié en arrière-plan. Pour appliquer manuellement les nouvelles couleurs :
+  1. Ouvrez cosmic-term
+  2. **View → Color schemes... → Import**
+  3. Sélectionnez `~/.cache/wal/cosmic_term.ron`
+  4. Sélectionnez le thème "Pywal" dans la liste
 
 ## Licence
 
