@@ -34,7 +34,9 @@ chmod +x install.sh
 
 `install.sh` auto-detects your distribution (Ubuntu/Pop!_OS/Debian → `apt`, Arch-based → `pacman`, Fedora → `dnf`) and installs the right system packages accordingly.
 
-**The core (COSMIC theme + Pywal terminal palette) is always installed.** App integrations (Firefox, Zed, Obsidian) are opt-in via flags:
+The installed packages are Cargo, Pywal, Pywalfox, and Matugen. If you run into issues, you can install them manually.
+
+**The core (COSMIC theme + Pywal terminal palette) is always installed.** App integrations (Firefox, Zed, Obsidian) are opt-in, either via flags at install time, or by editing the `config.json` file afterwards:
 
 | Flag | Effect |
 |---|---|
@@ -61,7 +63,11 @@ If you enable Firefox syncing, also install the [Pywalfox](https://addons.mozill
 | `swc.py` | Runs on every detected change; orchestrates Matugen, Pywal, Pywalfox, and applies the theme |
 | `cosmic-watch.service` | User systemd service that keeps `swcw.sh` running permanently |
 
-## App theming
+## Editing the configuration without reinstalling
+
+The `~/.local/bin/SystemWallColor/config.json` file controls which applications are synced (`firefox`, `zed`, `obsidian`) as well as Matugen's settings (`source-color-index`, `scheme`). You can edit it directly — changes take effect the next time the service triggers, no need to re-run `install.sh`.
+
+> ⚠️ Note that re-running `install.sh` fully regenerates this file from the flags you pass, overwriting any manual changes.
 
 ### Zed editor theming
 
@@ -123,11 +129,18 @@ chmod +x uninstall.sh
 - **Obsidian's vault path is hardcoded** in `matugen/config.toml` and must be edited manually to match your own vault before the snippet will be generated in the right place.
 - **Arch/Fedora support is untested** — the package names used for `pacman`/`dnf` are best-effort and may need adjusting.
 
-## License
-
-Personal project, free to use and modify.
-
 ## Source
 
 - The Zed matugen templates are inspired by https://github.com/InioX/matugen-themes/blob/main/templates/zed-colors.json
 - The Obsidian matugen template comes from https://github.com/Simorg2002/obsidian-matugen-template/tree/main
+
+# Upcoming
+- [x] Add the choice of Matugen's mode/backend.
+- [ ] Auto-detect whether apps (Zed, Obsidian, etc.) are installed via Flatpak or natively, and adjust Matugen output paths (`output_path`) accordingly.
+- [?] Implement manual wallpaper selection ("Follow COSMIC" vs "Custom image").
+- [ ] Add saturation and lightness settings for Matugen.
+- [ ] Add toggles for other synced applications (Alacritty, Discord, etc.).
+- [ ] Allow custom path configuration (Obsidian / Zed).
+- [ ] Add a debounce delay for the inotify watcher.
+- [ ] Integrate desktop notifications (notify-send).
+- [ ] Add a custom command system (post-generation hooks).

@@ -22,12 +22,12 @@ case "$DISTRO" in
     arch|endeavouros|manjaro|cachyos)
         PKG_MANAGER="pacman"
         ;;
-    fedora)
+    fedora|rakuos)
         PKG_MANAGER="dnf"
         ;;
     *)
         echo "⚠️  Distribution non reconnue ($DISTRO)."
-        echo "Ce script supporte : Ubuntu/Pop!_OS/Debian, Arch/EndeavourOS/Manjaro, Fedora."
+        echo "Ce script supporte : Ubuntu/Pop!_OS/Debian, Arch/EndeavourOS/Manjaro, Fedora/RakuOS."
         exit 1
         ;;
 esac
@@ -132,11 +132,32 @@ install_firefox() {
     pywalfox install
 }
 
+generate_config_json() {
+    local config_path="$home/.local/bin/SystemWallColor/config.json"
+    cat > "$config_path" <<EOF
+{
+  "_comment": "scheme possibles : scheme-content, scheme-expressive, scheme-fidelity, scheme-fruit-salad, scheme-monochrome, scheme-neutral, scheme-rainbow, scheme-tonal-spot, scheme-vibrant",
+  "matugen": {
+    "source-color-index": 0,
+    "scheme": "scheme-tonal-spot"
+  },
+  "distro": "$DISTRO",
+  "pkg_manager": "$PKG_MANAGER",
+  "firefox": $DO_FIREFOX,
+  "zed": $DO_ZED,
+  "obsidian": $DO_OBSIDIAN
+}
+EOF
+    echo "config.json généré."
+}
+
 install_project_files() {
     echo "=== Installation des fichiers du projet ==="
     mkdir -p "$home/.local/bin/SystemWallColor"
     cp "$script_dir/swc.py" "$home/.local/bin/SystemWallColor/swc.py"
     cp "$script_dir/swcw.sh" "$home/.local/bin/SystemWallColor/swcw.sh"
+    cp "$script_dir/uninstall.sh" "$home/.local/bin/SystemWallColor/uninstall.sh"
+    generate_config_json
     chmod +x "$home/.local/bin/SystemWallColor/swc.py"
     chmod +x "$home/.local/bin/SystemWallColor/swcw.sh"
     chmod +x "$home/.local/bin/SystemWallColor/uninstall.sh"
