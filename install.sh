@@ -72,14 +72,19 @@ for arg in "$@"; do
             echo "Usage: ./install.sh [options]"
             echo ""
             echo "Sans option : installe/active uniquement le cœur (COSMIC + Pywal)."
-            echo "Les composants non listés dans les flags sont désactivés (leurs"
-            echo "sections Matugen sont retirées de la config s'ils étaient actifs)."
             echo ""
             echo "Options:"
             echo "  --firefox    Active la synchronisation du thème Firefox (Pywalfox)"
             echo "  --zed        Active la synchronisation du thème Zed"
             echo "  --obsidian   Active la synchronisation du thème Obsidian"
             echo "  --all        Active tout"
+            echo ""
+            echo "Ces flags écrivent l'état voulu dans config.json. Tous les templates"
+            echo "Matugen (cœur, Zed, Obsidian) sont toujours installés dans"
+            echo "~/.config/matugen/config.toml ; c'est swc.py qui active/désactive"
+            echo "les sections correspondantes (via commentaire TOML) à chaque"
+            echo "exécution, en lisant config.json. Vous pouvez donc changer d'avis"
+            echo "en éditant config.json directement, sans relancer install.sh."
             exit 0
             ;;
         *)
@@ -95,7 +100,7 @@ if [ "$DO_ALL" = true ]; then
     DO_OBSIDIAN=true
 fi
 
-echo "=== Composants sélectionnés ==="
+echo "=== Composants sélectionnés (config.json initial) ==="
 echo "Cœur (COSMIC + Pywal) : toujours actif"
 echo "Firefox (Pywalfox)    : $DO_FIREFOX"
 echo "Zed                   : $DO_ZED"
@@ -157,7 +162,13 @@ install_project_files() {
     cp "$script_dir/swc.py" "$home/.local/bin/SystemWallColor/swc.py"
     cp "$script_dir/swcw.sh" "$home/.local/bin/SystemWallColor/swcw.sh"
     cp "$script_dir/uninstall.sh" "$home/.local/bin/SystemWallColor/uninstall.sh"
-    generate_config_json
+
+    if [ ! -f "$home/.local/bin/SystemWallColor/config.json" ]; then
+        generate_config_json
+    else
+        echo "config.json déjà présent, non modifié (éditez-le directement pour changer les préférences)."
+    fi
+
     chmod +x "$home/.local/bin/SystemWallColor/swc.py"
     chmod +x "$home/.local/bin/SystemWallColor/swcw.sh"
     chmod +x "$home/.local/bin/SystemWallColor/uninstall.sh"
@@ -181,29 +192,15 @@ add_template_block() {
     fi
 }
 
-# Retire une section [templates.NAME] (header + les 2 lignes input_path/output_path
-# qui suivent) si elle existe. Structure fixe présumée : 3 lignes par bloc.
-remove_template_block() {
-    local name="$1"
-
-    if [ ! -f "$CONFIG_FILE" ]; then
-        return
-    fi
-
-    if grep -q "^\[templates\.$name\]$" "$CONFIG_FILE"; then
-        sed -i "/^\[templates\.$name\]$/,+2d" "$CONFIG_FILE"
-        # Nettoie une éventuelle ligne vide devenue orpheline juste avant
-        sed -i '/./,/^$/!d' "$CONFIG_FILE" 2>/dev/null || true
-        echo "Section [templates.$name] retirée (composant désactivé)."
-    fi
-}
-
-setup_matugen_core() {
-    echo "=== Mise en place de matugen (thème COSMIC) ==="
+setup_matugen_all() {
+    echo "=== Mise en place de matugen (tous les templates) ==="
     mkdir -p "$home/.config/matugen/templates"
 
     cp -n "$script_dir/matugen/templates/cosmic_theme_dark.txt" "$home/.config/matugen/templates/cosmic_theme_dark.txt" 2>/dev/null || true
     cp -n "$script_dir/matugen/templates/cosmic_theme_light.txt" "$home/.config/matugen/templates/cosmic_theme_light.txt" 2>/dev/null || true
+    cp -n "$script_dir/matugen/templates/zed-colors-dark.json" "$home/.config/matugen/templates/zed-colors-dark.json" 2>/dev/null || true
+    cp -n "$script_dir/matugen/templates/zed-colors-light.json" "$home/.config/matugen/templates/zed-colors-light.json" 2>/dev/null || true
+    cp -n "$script_dir/matugen/templates/obsidian-minimal-matugen-colors.css" "$home/.config/matugen/templates/obsidian-minimal-matugen-colors.css" 2>/dev/null || true
 
     CONFIG_FILE="$home/.config/matugen/config.toml"
     if [ ! -f "$CONFIG_FILE" ]; then
@@ -218,12 +215,6 @@ setup_matugen_core() {
     add_template_block "cosmiclight" \
         '~/.config/matugen/templates/cosmic_theme_light.txt' \
         '~/.config/matugen/cosmic_theme_light.ron'
-}
-
-setup_matugen_zed() {
-    echo "=== Mise en place de matugen (thème Zed) ==="
-    cp -n "$script_dir/matugen/templates/zed-colors-dark.json" "$home/.config/matugen/templates/zed-colors-dark.json" 2>/dev/null || true
-    cp -n "$script_dir/matugen/templates/zed-colors-light.json" "$home/.config/matugen/templates/zed-colors-light.json" 2>/dev/null || true
 
     add_template_block "zeddark" \
         '~/.config/matugen/templates/zed-colors-dark.json' \
@@ -232,24 +223,10 @@ setup_matugen_zed() {
     add_template_block "zedlight" \
         '~/.config/matugen/templates/zed-colors-light.json' \
         '~/.var/app/dev.zed.Zed/config/zed/themes/matugen_light.json'
-}
-
-disable_matugen_zed() {
-    remove_template_block "zeddark"
-    remove_template_block "zedlight"
-}
-
-setup_matugen_obsidian() {
-    echo "=== Mise en place de matugen (thème Obsidian) ==="
-    cp -n "$script_dir/matugen/templates/obsidian-minimal-matugen-colors.css" "$home/.config/matugen/templates/obsidian-minimal-matugen-colors.css" 2>/dev/null || true
 
     add_template_block "obsidian" \
         '~/.config/matugen/templates/obsidian-minimal-matugen-colors.css' \
         '~/Documents/Obsidian Vault/.obsidian/snippets/Matugen.css'
-}
-
-disable_matugen_obsidian() {
-    remove_template_block "obsidian"
 }
 
 setup_pywal_cosmic_term() {
@@ -275,21 +252,7 @@ install_core_system
 [ "$DO_FIREFOX" = true ] && install_firefox
 
 install_project_files
-
-setup_matugen_core
-
-if [ "$DO_ZED" = true ]; then
-    setup_matugen_zed
-else
-    disable_matugen_zed
-fi
-
-if [ "$DO_OBSIDIAN" = true ]; then
-    setup_matugen_obsidian
-else
-    disable_matugen_obsidian
-fi
-
+setup_matugen_all
 setup_pywal_cosmic_term
 setup_systemd_service
 

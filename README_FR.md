@@ -137,7 +137,7 @@ chmod +x uninstall.sh
 # À venir
 - [x] Ajouter le choix du mode/backend de Matugen.
 - [ ] Détecter automatiquement si les applications (Zed, Obsidian, etc.) sont installées via Flatpak ou nativement, et adapter les chemins de sortie Matugen (`output_path`) en conséquence.
-- [?] Implémenter le choix du fond d'écran manuel ("Suivre COSMIC" vs "Image personnalisée").
+- [ ] Implémenter le choix du fond d'écran manuel ("Suivre COSMIC" vs "Image personnalisée").
 - [ ] Ajouter les réglages de saturation et de luminosité pour matugen.
 - [ ] Ajouter des interrupteurs pour d'autres applications synchronisées (Alacritty, Discord, etc.).
 - [ ] Permettre la configuration des chemins personnalisés (Obsidian / Zed).

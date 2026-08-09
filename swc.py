@@ -86,12 +86,12 @@ def get_scheme(conf):
     return scheme
 
 
-def matugen(wallc, scheme):
+def matugen(wallc, scheme, source_index="0"):
     try:
         subprocess.run(
             [
                 "matugen",
-                "--source-color-index", "0",
+                "--source-color-index", source_index,
                 "--type", scheme,
                 "image", wallc,
             ],
@@ -137,14 +137,11 @@ def main():
     wallc = read_wallpaper()
     modec = read_mode()
     scheme = get_scheme(conf)
+    source_index = str(conf.get("matugen", {}).get("source-color-index", 0))
 
     print(f"Wallpaper : {wallc}")
     print(f"System mode : {modec}")
     print(f"Scheme : {scheme}")
-
-    if conf.get("firefox"):
-        matugen(wallc, scheme)
-        pywalfox(modec)
 
     if conf.get("zed"):
         enable_template("templates.zeddark")
@@ -152,6 +149,18 @@ def main():
     else:
         disable_template("templates.zeddark")
         disable_template("templates.zedlight")
+
+    if conf.get("obsidian"):
+        enable_template("templates.obsidian")
+    else:
+        disable_template("templates.obsidian")
+
+
+    matugen(wallc, scheme, source_index)
+    pywal(wallc)
+
+    if conf.get("firefox"):
+        pywalfox(modec)
 
     cosmicsetting(modec)
 
